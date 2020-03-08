@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Linq;
+using System.IO;
 
 namespace petssl_downloader
 {
@@ -101,6 +102,9 @@ namespace petssl_downloader
                             }
 
                             j.Date = stripeNodes[0].ChildNodes[1].ChildNodes[0].InnerHtml;
+                            var journalDate = DateTime.Parse(j.Date);
+                            j.Date = journalDate.ToString("yyyy-MM-dd");
+
                             j.Service = stripeNodes[1].ChildNodes[1].ChildNodes[0].InnerHtml;
                             j.Pet = stripeNodes[2].ChildNodes[1].ChildNodes[0].InnerHtml;
                             j.PetSitter = stripeNodes[3].ChildNodes[1].ChildNodes[0].InnerHtml;
@@ -167,11 +171,16 @@ namespace petssl_downloader
                                         int queryLoc = imageSrc.IndexOf('?');
                                         var imageObjectId = imageSrc.Substring(imgLoc, queryLoc-imgLoc);
                                         j.Images.Add(imageObjectId);
+                                        string localPath = "C:\git\petssl-downloader\download\" + imageObjectId;
+                                        if (File.Exists(localPath))
+                                        {
+                                            File.SetLastWriteTime(localPath, j.Date);
+                                        }
                                     }
+
+
                                 }
                             }
-                            var journalDate = DateTime.Parse(j.Date);
-                            j.Date = journalDate.ToString("yyyy-MM-dd");
                             string json = JsonSerializer.Serialize(j, jsonOptions);
                             string journalPath = @"C:\git\petssl-downloader\journals\" + j.Date + ".json";
                             System.IO.File.WriteAllText(journalPath, json);

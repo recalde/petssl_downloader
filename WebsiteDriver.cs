@@ -1,6 +1,5 @@
 using System.Net.Http;
 using System.Collections.Generic;
-using System.Collections;
 using System.Net;
 using System;
 using System.Linq;
@@ -22,13 +21,8 @@ namespace petssl_downloader
             {
                 CookieContainer = cookieContainer
             };
-            httpClient = new HttpClient(httpClientHandler);
-            
-            
-            var url = "https://hshpetcare.petssl.com/login";
-            Console.WriteLine("[GET] {0}", url);
-            var responseTask = httpClient.GetAsync(url);
-            responseTask.Wait();
+            httpClient = new HttpClient(httpClientHandler); 
+            httpClient.Timeout = TimeSpan.FromMinutes(5);
         }
 
         public Cookie[] GetCookies()
@@ -38,6 +32,9 @@ namespace petssl_downloader
 
         public void Login(string username, string password)
         {
+            var url = "https://hshpetcare.petssl.com/login";
+            Console.WriteLine("[POST] {0}", url);
+
             var userCookie = new Cookie("USER", username);
             cookieContainer.Add(websiteUri, userCookie);
 
@@ -50,8 +47,7 @@ namespace petssl_downloader
             };
 
             var postContent = new FormUrlEncodedContent(postValues);
-            var url = "https://hshpetcare.petssl.com/login";
-            Console.WriteLine("[GET] {0}", url);
+
             var responseTask = httpClient.PostAsync(url, postContent);
             responseTask.Wait();
             var response = responseTask.Result;
@@ -64,8 +60,8 @@ namespace petssl_downloader
         public void Home()
         {
             var url = "https://hshpetcare.petssl.com/";
-            var responseTask = httpClient.GetAsync(url);
             Console.WriteLine("[GET] {0}", url);
+            var responseTask = httpClient.GetAsync(url);
             responseTask.Wait();
         }
 
@@ -132,14 +128,15 @@ namespace petssl_downloader
 
         
 
-        public void DownloadImage(string src)
+        public string DownloadImage(string src)
         {
-            string fullPath = "https://s3.amazonaws.com/petssl.com/hshpetcare/images/uploads/Content/" + src;
-            string localPath = @"C:\git\petssl-downloader\download\" + src;
+            string url = "https://s3.amazonaws.com/petssl.com/hshpetcare/images/uploads/Content/" + src;
+            Console.WriteLine("[GET] {0}", url);
 
+            string localPath = @"C:\git\petssl-downloader\download\" + src;
             if (!File.Exists(localPath))
             {
-                var responseTask = httpClient.GetAsync(fullPath);
+                var responseTask = httpClient.GetAsync(url);
                 responseTask.Wait();
                 var response = responseTask.Result;
 
@@ -148,6 +145,8 @@ namespace petssl_downloader
                 var content = readContentTask.Result;
                 File.WriteAllBytes(localPath, content);
             }
+
+            return localPath;
         }
 
     

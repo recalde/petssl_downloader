@@ -12,7 +12,6 @@ namespace petssl_downloader
         private readonly Configuration configuration;
         private readonly HttpClient httpClient;
         private readonly CookieContainer cookieContainer;
-        private readonly Uri websiteUri;
 
         public WebsiteDriver(Configuration configuration)
         {

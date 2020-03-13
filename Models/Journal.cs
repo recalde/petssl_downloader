@@ -7,11 +7,12 @@ namespace petssl_downloader.Models
         public string Date { get; set; }
         public string Time { get; set; }
         public string Service { get; set; }
+        public string Note { get; set; }
         public string Pets { get; set; }
         public string PetSitter { get; set; }
         public string Poop { get; set; }
         public string Pee { get; set; }
-        public string Meal { get; set; }
+        public string MealServed { get; set; }
         public string OtherActions { get; set; }
         public List<Comment> Comments { get; set; }
         public List<string> Images { get; set; }

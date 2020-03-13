@@ -6,11 +6,16 @@ namespace petssl_downloader
     {
         static void Main(string[] args)
         {
+            Console.Write("username: ");
+            string username = Console.ReadLine();
+            Console.Write("password: ");
+            string password = ReadPassword();
+
             // Your local machine and website configuration
             var configuration = new Configuration
             {
                 ImageThreads = 5,
-                JournalThreads = 15,
+                JournalThreads = 25,
                 ImageDirectory = @"C:\git\petssl_downloader\download\",
                 JournalDirectory = @"C:\git\petssl_downloader\journals\",
                 WebsiteUri = new Uri("https://hshpetcare.petssl.com")
@@ -19,10 +24,10 @@ namespace petssl_downloader
             var downloader = new PetSslDownloader(configuration);
 
             // Login
-            downloader.Login("login", "password");
+            downloader.Login(username, password);
 
             // Download Images
-            //downloader.DownloadImages(24);
+            downloader.DownloadImages(24);
 
             // Download Journals
             DateTime startDate = new DateTime(2020, 3, 16);
@@ -30,6 +35,34 @@ namespace petssl_downloader
             downloader.DownloadJournals(startDate, endDate);
 
             downloader.ComputeStatistics();
+        }
+
+        static string ReadPassword()
+        {
+            string pass = "";
+            do
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                // Backspace Should Not Work
+                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
+                {
+                    pass += key.KeyChar;
+                    Console.Write("*");
+                }
+                else
+                {
+                    if (key.Key == ConsoleKey.Backspace && pass.Length > 0)
+                    {
+                        pass = pass.Substring(0, (pass.Length - 1));
+                        Console.Write("\b \b");
+                    }
+                    else if(key.Key == ConsoleKey.Enter)
+                    {
+                        break;
+                    }
+                }
+            } while (true);
+            return pass;
         }
 
     }

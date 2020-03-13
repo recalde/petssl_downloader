@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.IO;
 using petssl_downloader.Models;
+using System.Globalization;
+using CsvHelper;
 
 namespace petssl_downloader
 {
@@ -109,6 +111,7 @@ namespace petssl_downloader
                 foreach (var completedJournal in completedJournals)
                 {
                     string journalTimestamp = completedJournal.SelectNodes("small").FirstOrDefault().InnerHtml;
+                    string note = completedJournal.SelectNodes("div[@class='cal_notes']")?.FirstOrDefault()?.InnerText;
                     var viewJournalLinks = completedJournal.SelectNodes("a[starts-with(@href, '/view-journal?')]");
                     var href = viewJournalLinks?.FirstOrDefault()?.GetAttributeValue("href", "");
                     if (href != null)
@@ -116,6 +119,7 @@ namespace petssl_downloader
                         var journal = DownloadJournal(href, journalTimestamp);
                         if (journal != null)
                         {
+                            journal.Note = note;
                             lock (listLock)
                             {
                                 journalList.Add(journal);
@@ -147,6 +151,10 @@ namespace petssl_downloader
 
             var j = new Journal();
 
+            if (journalTimestamp != null && journalTimestamp.Length > 1 && journalTimestamp.EndsWith(":"))
+            {
+                journalTimestamp = journalTimestamp.Substring(0, journalTimestamp.Length - 1);
+            }
             j.Time = journalTimestamp;
 
             DateTime journalDate = default(DateTime);
@@ -178,8 +186,8 @@ namespace petssl_downloader
                     case "Pee":
                         j.Pee = divNode.InnerText;
                         break;
-                    case "Meal":
-                        j.Meal = divNode.InnerText;
+                    case "Meal Served":
+                        j.MealServed = divNode.InnerText;
                         break;
                     case "Other Actions":
                         j.OtherActions = divNode.InnerHtml.Replace("<br>", ", ");
@@ -197,8 +205,12 @@ namespace petssl_downloader
                 foreach (var commentNode in commentNodes)
                 {
                     var c = new Comment();
-                    c.User = commentNode.SelectNodes("div//strong").FirstOrDefault()?.InnerHtml;
-                    c.CommentText = commentNode.SelectNodes("div")[1].InnerHtml.Replace("<br>\n", "\n");
+                    c.User = commentNode.SelectNodes("div//strong")?.FirstOrDefault()?.InnerHtml;
+                    var divNodes = commentNode.SelectNodes("div");
+                    if (divNodes != null && divNodes.Count >= 2)
+                    {
+                        c.CommentText = divNodes[1].InnerHtml.Replace("<br>\n", "\n");
+                    }
                     j.Comments.Add(c);
                 }
             }
@@ -232,10 +244,12 @@ namespace petssl_downloader
             }
             return j;
         }
+
         public void ComputeStatistics()
         {
             string listFilePath = Path.Combine(configuration.JournalDirectory, "list.json");
-            var journalList = JsonSerializer.Deserialize<List<Journal>>(listFilePath, jsonOptions);
+            string listJson = File.ReadAllText(listFilePath);
+            var journalList = JsonSerializer.Deserialize<List<Journal>>(listJson, jsonOptions).OrderBy(j => j.Date).ToArray();
 
             var years = journalList.GroupBy(j => DateTime.Parse(j.Date).ToString("yyyy"));
             foreach (var year in years.OrderBy(y => y.Key))
@@ -251,6 +265,67 @@ namespace petssl_downloader
 
                 }
             }
+
+            // Journals
+            string journalsFile = Path.Combine(configuration.JournalDirectory, "journals.csv");
+            string imagesFile = Path.Combine(configuration.JournalDirectory, "images.csv");
+            string commentsFile = Path.Combine(configuration.JournalDirectory, "comments.csv");
+
+
+            using (var journalsWriter = new StreamWriter(journalsFile))
+            using (var jouralsCsv = new CsvWriter(journalsWriter, CultureInfo.InvariantCulture))
+            {
+                foreach (var j in journalList)
+                {
+                    jouralsCsv.WriteField(j.Date);
+                    jouralsCsv.WriteField(j.Time);
+                    jouralsCsv.WriteField(j.Service);
+                    jouralsCsv.WriteField(j.Note);
+                    jouralsCsv.WriteField(j.Pets);
+                    jouralsCsv.WriteField(j.PetSitter);
+                    jouralsCsv.WriteField(j.Poop);
+                    jouralsCsv.WriteField(j.Pee);
+                    jouralsCsv.WriteField(j.MealServed);
+                    jouralsCsv.WriteField(j.OtherActions);
+                    jouralsCsv.WriteField(j.Comments.Count);
+                    jouralsCsv.WriteField(j.Images.Count);
+                    jouralsCsv.NextRecord();
+                }
+            }
+
+            using (var imagesWriter = new StreamWriter(imagesFile))
+            using (var imagesCsv = new CsvWriter(imagesWriter, CultureInfo.InvariantCulture))
+            {
+                foreach (var j in journalList)
+                {
+                    foreach (var i in j.Images)
+                    {
+                        imagesCsv.WriteField(j.Date);
+                        imagesCsv.WriteField(j.Time);
+                        imagesCsv.WriteField(j.PetSitter);
+                        imagesCsv.WriteField(i);
+                        imagesCsv.NextRecord();
+                    }
+                }
+            }
+
+            using (var commentsWriter = new StreamWriter(commentsFile))
+            using (var commentsCsv = new CsvWriter(commentsWriter, CultureInfo.InvariantCulture))
+            {
+                foreach (var j in journalList)
+                {
+                    foreach (var c in j.Comments)
+                    {
+                        commentsCsv.WriteField(j.Date);
+                        commentsCsv.WriteField(j.Time);
+                        commentsCsv.WriteField(j.PetSitter);
+                        commentsCsv.WriteField(c.User);
+                        commentsCsv.WriteField(c.CommentText);
+                        commentsCsv.NextRecord();
+                    }
+                }
+            }
         }
+
     }
 }

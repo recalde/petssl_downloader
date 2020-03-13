@@ -9,34 +9,36 @@ namespace petssl_downloader
 {
     public class WebsiteDriver
     {
+        private readonly Configuration configuration;
         private readonly HttpClient httpClient;
         private readonly CookieContainer cookieContainer;
         private readonly Uri websiteUri;
-    
-        public WebsiteDriver()
+
+        public WebsiteDriver(Configuration configuration)
         {
-            cookieContainer = new CookieContainer();
-            websiteUri = new Uri("https://hshpetcare.petssl.com");
+            this.configuration = configuration;
+            this.cookieContainer = new CookieContainer();
             var httpClientHandler = new HttpClientHandler
             {
                 CookieContainer = cookieContainer
             };
-            httpClient = new HttpClient(httpClientHandler); 
-            httpClient.Timeout = TimeSpan.FromMinutes(5);
+            this.httpClient = new HttpClient(httpClientHandler);
+            this.httpClient.Timeout = TimeSpan.FromMinutes(5);
         }
 
         public Cookie[] GetCookies()
         {
-            return cookieContainer.GetCookies(websiteUri).Cast<Cookie>().ToArray();
+            return cookieContainer.GetCookies(configuration.WebsiteUri).Cast<Cookie>().ToArray();
         }
 
         public void Login(string username, string password)
         {
-            var url = "https://hshpetcare.petssl.com/login";
+            var url = new Uri(configuration.WebsiteUri, "login");
+
             Console.WriteLine("[POST] {0}", url);
 
             var userCookie = new Cookie("USER", username);
-            cookieContainer.Add(websiteUri, userCookie);
+            cookieContainer.Add(configuration.WebsiteUri, userCookie);
 
             // Get Cookie PHPSESSID, AWSELB, AWSELBCORS
             var postValues = new Dictionary<string, string>
@@ -59,7 +61,7 @@ namespace petssl_downloader
 
         public void Home()
         {
-            var url = "https://hshpetcare.petssl.com/";
+            var url = configuration.WebsiteUri;
             Console.WriteLine("[GET] {0}", url);
             var responseTask = httpClient.GetAsync(url);
             responseTask.Wait();
@@ -68,7 +70,7 @@ namespace petssl_downloader
         public void Client()
         {
             // Get Cookie -  ADMINLOGIN
-            var url = "https://hshpetcare.petssl.com/clients/";
+            var url = new Uri(configuration.WebsiteUri, "clients");
             Console.WriteLine("[GET] {0}", url);
             var responseTask = httpClient.GetAsync(url);
             responseTask.Wait();
@@ -76,13 +78,18 @@ namespace petssl_downloader
 
         public string Images(int pageNumber)
         {
-            var url = "https://hshpetcare.petssl.com/admin/images";
-            if (pageNumber != 0)
+            Uri url = null;
+            if (pageNumber == 0)
+            {
+                url = new Uri(configuration.WebsiteUri, $"admin/images");
+            }
+            else
             {
                 int start = pageNumber * 96;
                 int end = start + 96;
-                url += string.Format("?v=gallery&s={0}&s={1}", end, start);
+                url = new Uri(configuration.WebsiteUri, $"admin/images?v=gallery&s={end}&s={start}");
             }
+
             Console.WriteLine("[GET] {0}", url);
             var responseTask = httpClient.GetAsync(url);
             responseTask.Wait();
@@ -97,8 +104,7 @@ namespace petssl_downloader
 
         public string Schedule(DateTime startDate)
         {
-            var url = "https://hshpetcare.petssl.com/admin/my-schedule?v=cal&l=5day&d=";
-            url = url + startDate.ToString("yyyy-MM-dd");
+            var url = new Uri(configuration.WebsiteUri, $"admin/my-schedule?v=cal&l=5day&d={startDate.ToString("yyyy-MM-dd")}");
             Console.WriteLine("[GET] {0}", url);
 
             var responseTask = httpClient.GetAsync(url);
@@ -113,7 +119,7 @@ namespace petssl_downloader
 
         public string Journal(string href)
         {
-            var url = "https://hshpetcare.petssl.com" + href;
+            var url = new Uri(configuration.WebsiteUri, href);
             Console.WriteLine("[GET] {0}", url);
 
             var responseTask = httpClient.GetAsync(url);
@@ -126,14 +132,14 @@ namespace petssl_downloader
             return content;
         }
 
-        
+
 
         public string DownloadImage(string src)
         {
             string url = "https://s3.amazonaws.com/petssl.com/hshpetcare/images/uploads/Content/" + src;
             Console.WriteLine("[GET] {0}", url);
 
-            string localPath = @"C:\git\petssl-downloader\download\" + src;
+            string localPath = Path.Combine(configuration.ImageDirectory, src);
             if (!File.Exists(localPath))
             {
                 var responseTask = httpClient.GetAsync(url);
@@ -149,6 +155,6 @@ namespace petssl_downloader
             return localPath;
         }
 
-    
+
     }
 }

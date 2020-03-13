@@ -6,18 +6,28 @@ namespace petssl_downloader
     {
         static void Main(string[] args)
         {
-            var downloader = new PetSslDownloader();
+            // Your local machine and website configuration
+            var configuration = new Configuration
+            {
+                ImageThreads = 5,
+                JournalThreads = 15,
+                ImageDirectory = @"C:\git\petssl_downloader\download\",
+                JournalDirectory = @"C:\git\petssl_downloader\journals\",
+                WebsiteUri = new Uri("https://hshpetcare.petssl.com")
+            };
+
+            var downloader = new PetSslDownloader(configuration);
 
             // Login
-            downloader.Login("email", "changeit");
+            downloader.Login("login", "password");
 
             // Download Images
-            //downloader.DownloadImages();
+            //downloader.DownloadImages(24);
 
             // Download Journals
-            DateTime startDate = new DateTime(2020,3,2);
-            DateTime endDate = new DateTime(2015,12,1);
-            //downloader.DownloadJournals(startDate, endDate);
+            DateTime startDate = new DateTime(2020, 3, 16);
+            DateTime endDate = new DateTime(2015, 12, 1);
+            downloader.DownloadJournals(startDate, endDate);
 
             downloader.ComputeStatistics();
         }

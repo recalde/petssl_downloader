@@ -251,25 +251,11 @@ namespace petssl_downloader
             string listJson = File.ReadAllText(listFilePath);
             var journalList = JsonSerializer.Deserialize<List<Journal>>(listJson, jsonOptions).OrderBy(j => j.Date).ToArray();
 
-            var years = journalList.GroupBy(j => DateTime.Parse(j.Date).ToString("yyyy"));
-            foreach (var year in years.OrderBy(y => y.Key))
-            {
-                var petSitters = year.GroupBy(j => j.PetSitter);
-                foreach (var petSitter in petSitters.OrderByDescending(p => p.Count()))
-                {
-                    int walks = petSitter.Count();
-                    int comments = petSitter.SelectMany(j => j.Comments).Count();
-                    int images = petSitter.SelectMany(j => j.Images).Count();
-
-                    Console.WriteLine("[{0}]\t{1}\t{2} Walks\t{3} Comments\t{4} Images", year.Key, petSitter.Key, walks, comments, images);
-
-                }
-            }
-
             // Journals
             string journalsFile = Path.Combine(configuration.JournalDirectory, "journals.csv");
             string imagesFile = Path.Combine(configuration.JournalDirectory, "images.csv");
             string commentsFile = Path.Combine(configuration.JournalDirectory, "comments.csv");
+            string petSitterFile = Path.Combine(configuration.JournalDirectory, "pet-sitter.csv");
 
 
             using (var journalsWriter = new StreamWriter(journalsFile))
@@ -323,6 +309,22 @@ namespace petssl_downloader
                         commentsCsv.WriteField(c.CommentText);
                         commentsCsv.NextRecord();
                     }
+                }
+            }
+
+            using (var petSitterWriter = new StreamWriter(petSitterFile))
+            using (var petSitterCsv = new CsvWriter(petSitterWriter, CultureInfo.InvariantCulture))
+            {
+                var petSitters = journalList.GroupBy(j => j.PetSitter).OrderByDescending(s => s.Count());
+                foreach (var petSitter in petSitters)
+                {
+                        petSitterCsv.WriteField(petSitter.Key);
+                        petSitterCsv.WriteField(petSitter.Count());
+                        petSitterCsv.WriteField(petSitter.Select(s => s.Date).Min());
+                        petSitterCsv.WriteField(petSitter.Select(s => s.Date).Max());
+                        petSitterCsv.WriteField(petSitter.SelectMany(s => s.Comments).Count());
+                        petSitterCsv.WriteField(petSitter.SelectMany(s => s.Images).Count());
+                        petSitterCsv.NextRecord();
                 }
             }
         }

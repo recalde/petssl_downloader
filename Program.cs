@@ -24,15 +24,15 @@ namespace petssl_downloader
             var downloader = new PetSslDownloader(configuration);
 
             // Login
-            downloader.Login(username, password);
+            //downloader.Login(username, password);
 
             // Download Images
-            downloader.DownloadImages(24);
+            //downloader.DownloadImages(24);
 
             // Download Journals
             DateTime startDate = new DateTime(2020, 3, 16);
             DateTime endDate = new DateTime(2015, 12, 1);
-            downloader.DownloadJournals(startDate, endDate);
+            //downloader.DownloadJournals(startDate, endDate);
 
             downloader.ComputeStatistics();
         }

@@ -1,4 +1,4 @@
-name: Dotnet Build and Publish
+name: dotnet-build-pubish
 on:
   push:
     branches: [ master ]
@@ -12,16 +12,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core
+    - name: dotnet sdk 3.1.101
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    - name: Build petssl_downloader
+    - name: dotnet build
       run: dotnet build --configuration Release
-    - name: Publish petssl_downloader (PublishSingleFile)
+    - name: dotnet publish - single file
       run: dotnet publish -c Release -r win10-x64 /p:PublishSingleFile=true -o out
-    - name: Upload petssl-downloader.exe
+    - name: upload artifact
       uses: actions/upload-artifact@v1
       with:
         name: PetSslDownloader
-        path: out/petssl-downloader.exe
+        path: out/*

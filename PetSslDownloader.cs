@@ -318,13 +318,13 @@ namespace petssl_downloader
                 var petSitters = journalList.GroupBy(j => j.PetSitter).OrderByDescending(s => s.Count());
                 foreach (var petSitter in petSitters)
                 {
-                        petSitterCsv.WriteField(petSitter.Key);
-                        petSitterCsv.WriteField(petSitter.Count());
-                        petSitterCsv.WriteField(petSitter.Select(s => s.Date).Min());
-                        petSitterCsv.WriteField(petSitter.Select(s => s.Date).Max());
-                        petSitterCsv.WriteField(petSitter.SelectMany(s => s.Comments).Count());
-                        petSitterCsv.WriteField(petSitter.SelectMany(s => s.Images).Count());
-                        petSitterCsv.NextRecord();
+                    petSitterCsv.WriteField(petSitter.Key);
+                    petSitterCsv.WriteField(petSitter.Count());
+                    petSitterCsv.WriteField(petSitter.Select(s => s.Date).Min());
+                    petSitterCsv.WriteField(petSitter.Select(s => s.Date).Max());
+                    petSitterCsv.WriteField(petSitter.SelectMany(s => s.Comments).Count());
+                    petSitterCsv.WriteField(petSitter.SelectMany(s => s.Images).Count());
+                    petSitterCsv.NextRecord();
                 }
             }
         }

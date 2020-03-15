@@ -1,11 +1,36 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace petssl_downloader
 {
+    /// <summary>
+    /// This example uses the discovery API to list all APIs in the discovery repository.
+    /// https://developers.google.com/discovery/v1/using.
+    /// <summary>
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
+        {
+            Console.WriteLine("petssl_downloader");
+            Console.WriteLine("=================");
+            try
+            {
+                new Program().Run().Wait();
+            }
+            catch (AggregateException ex)
+            {
+                foreach (var e in ex.InnerExceptions)
+                {
+                    Console.WriteLine("ERROR: " + e.Message);
+                }
+            }
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+        }
+
+        private async Task Run()
         {
             Console.Write("username: ");
             string username = Console.ReadLine();
@@ -49,7 +74,7 @@ namespace petssl_downloader
             downloader.ComputeStatistics();
         }
 
-        static string ReadPassword()
+        private string ReadPassword()
         {
             string pass = "";
             do
@@ -68,7 +93,7 @@ namespace petssl_downloader
                         pass = pass.Substring(0, (pass.Length - 1));
                         Console.Write("\b \b");
                     }
-                    else if(key.Key == ConsoleKey.Enter)
+                    else if (key.Key == ConsoleKey.Enter)
                     {
                         break;
                     }
@@ -76,6 +101,5 @@ namespace petssl_downloader
             } while (true);
             return pass;
         }
-
     }
 }

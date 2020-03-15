@@ -16,23 +16,23 @@ namespace petssl_downloader
             {
                 ImageThreads = 5,
                 JournalThreads = 25,
-                ImageDirectory = @"C:\git\petssl_downloader\download\",
-                JournalDirectory = @"C:\git\petssl_downloader\journals\",
+                ImageDirectory = @"C:\git\petssl-downloader\download\",
+                JournalDirectory = @"C:\git\petssl-downloader\journals\",
                 WebsiteUri = new Uri("https://hshpetcare.petssl.com")
             };
 
             var downloader = new PetSslDownloader(configuration);
 
             // Login
-            //downloader.Login(username, password);
+            downloader.Login(username, password);
 
             // Download Images
-            //downloader.DownloadImages(24);
+            downloader.DownloadImages(24);
 
             // Download Journals
             DateTime startDate = new DateTime(2020, 3, 16);
-            DateTime endDate = new DateTime(2015, 12, 1);
-            //downloader.DownloadJournals(startDate, endDate);
+            DateTime endDate = new DateTime(2014, 1, 1);
+            downloader.DownloadJournals(startDate, endDate);
 
             downloader.ComputeStatistics();
         }

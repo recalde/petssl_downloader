@@ -141,6 +141,22 @@ namespace petssl_downloader
             string localPath = Path.Combine(configuration.ImageDirectory, src);
             if (!File.Exists(localPath))
             {
+                byte[] content = TryGetUrlBytes(url);
+                // Retry
+                if (content == null) content = TryGetUrlBytes(url);
+                if(content != null)
+                {
+                    File.WriteAllBytes(localPath, content);
+                }   
+            }
+
+            return localPath;
+        }
+
+        public byte[] TryGetUrlBytes(string url)
+        {
+            try
+            {
                 var responseTask = httpClient.GetAsync(url);
                 responseTask.Wait();
                 var response = responseTask.Result;
@@ -148,10 +164,13 @@ namespace petssl_downloader
                 var readContentTask = response.Content.ReadAsByteArrayAsync();
                 readContentTask.Wait();
                 var content = readContentTask.Result;
-                File.WriteAllBytes(localPath, content);
+                return content;
             }
-
-            return localPath;
+            catch(Exception)
+            {
+                Console.WriteLine("[ERROR] {0}", url);
+            }
+            return null;
         }
 
 

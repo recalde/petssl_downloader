@@ -4,17 +4,13 @@ using System.Threading.Tasks;
 
 namespace petssl_downloader
 {
-    /// <summary>
-    /// This example uses the discovery API to list all APIs in the discovery repository.
-    /// https://developers.google.com/discovery/v1/using.
-    /// <summary>
     class Program
     {
         [STAThread]
         static void Main(string[] args)
         {
-            Console.WriteLine("petssl_downloader");
-            Console.WriteLine("=================");
+            Console.WriteLine("petssl downloader");
+            Console.WriteLine("-----------------");
             try
             {
                 new Program().Run().Wait();

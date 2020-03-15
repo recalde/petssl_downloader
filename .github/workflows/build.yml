@@ -19,9 +19,9 @@ jobs:
     - name: Build petssl_downloader
       run: dotnet build --configuration Release
     - name: Publish petssl_downloader (PublishSingleFile)
-      run: dotnet publish -c Release -r win10-x64 /p:PublishSingleFile=true
+      run: dotnet publish -c Release -r win10-x64 /p:PublishSingleFile=true -o out
     - name: Upload petssl-downloader.exe
       uses: actions/upload-artifact@v1
       with:
         name: PetSslDownloader
-        path: C:\git\petssl-downloader\bin\Release\netcoreapp3.1\win10-x64\publish\petssl-downloader.exe
+        path: out/petssl-downloader.exe

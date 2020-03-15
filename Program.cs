@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace petssl_downloader
 {
@@ -11,15 +12,26 @@ namespace petssl_downloader
             Console.Write("password: ");
             string password = ReadPassword();
 
+            string rootPath = Directory.GetCurrentDirectory();
+
             // Your local machine and website configuration
             var configuration = new Configuration
             {
                 ImageThreads = 5,
                 JournalThreads = 25,
-                ImageDirectory = @"C:\git\petssl-downloader\download\",
-                JournalDirectory = @"C:\git\petssl-downloader\journals\",
-                WebsiteUri = new Uri("https://hshpetcare.petssl.com")
+                ImageDirectory = Path.Combine(rootPath, "images"),
+                JournalDirectory = Path.Combine(rootPath, "journals"),
+                WebsiteUri = new Uri("https://hshpetcare.petssl.com"),
+                ImageUri = new Uri("https://s3.amazonaws.com/petssl.com/hshpetcare/images/uploads/Content/")
             };
+
+            // Output Configuration
+            Console.Write("\n\n");
+            Console.WriteLine($"Images Output: {configuration.ImageDirectory}");
+            Console.WriteLine($"Journals Output: {configuration.JournalDirectory}");
+            Console.Write("\n");
+            Console.WriteLine("Running Downloader!");
+            Console.Write("\n");
 
             var downloader = new PetSslDownloader(configuration);
 

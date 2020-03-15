@@ -135,7 +135,7 @@ namespace petssl_downloader
 
         public string DownloadImage(string src)
         {
-            string url = "https://s3.amazonaws.com/petssl.com/hshpetcare/images/uploads/Content/" + src;
+            var url = new Uri(configuration.ImageUri, src);
             Console.WriteLine("[GET] {0}", url);
 
             string localPath = Path.Combine(configuration.ImageDirectory, src);
@@ -153,7 +153,7 @@ namespace petssl_downloader
             return localPath;
         }
 
-        public byte[] TryGetUrlBytes(string url)
+        public byte[] TryGetUrlBytes(Uri url)
         {
             try
             {

@@ -14,5 +14,6 @@ namespace petssl_downloader
         public int JournalThreads { get; set; }
         public int ImageThreads { get; set; }
         public Uri WebsiteUri { get; set; }
+        public Uri ImageUri { get; set; }
     }
 }

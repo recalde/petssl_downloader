@@ -25,5 +25,3 @@ jobs:
       with:
         name: PetSslDownloader
         path: out/
-    - name: Action Release
-        uses: yakuhzi/action-release@v1.2.0
